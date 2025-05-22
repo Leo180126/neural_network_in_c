@@ -1,5 +1,91 @@
 #include "NeuralNetwork.h"
 
+void guesser(NeuralNetwork *nn, int example_index, int **data){
+    printf("\nRandom Guesser !!!!!!!!!!\n");
+    int X[784];
+    for(int i=1; i<785; i++){
+        X[i - 1] = data[example_index][i];
+    }
+    forwardPropagation(nn, X);
+    for(int i = 0; i<784; i++){
+        printf("%3d", X[i]);
+        if(i % 28 == 27)printf("\n");
+    }
+    printOutput(nn);
+}
+
+void runTest(NeuralNetwork *nn, int **data){
+    int **X = (int **)malloc(NUMOFTEST * sizeof(int *));
+    int **Y = (int **)malloc(NUMOFTEST * sizeof(int *));
+    
+    for (int i = 0; i < NUMOFTEST; i++) {
+        X[i] = (int *)malloc(784 * sizeof(int));
+        Y[i] = (int *)malloc(10 * sizeof(int));
+    }
+
+    for (int i = FIRSTTEST_EX; i < FIRSTTEST_EX + NUMOFTEST; i++) {
+        int idx = i - FIRSTTEST_EX;
+        int label = data[i][0];
+        for (int j = 0; j < 784; j++) {
+            X[idx][j] = data[i][j + 1];
+        }
+        for (int j = 0; j < 10; j++) {
+            Y[idx][j] = (j == label) ? 1 : 0;
+        }
+    }
+
+    printf("\nMSE loss = %lf\n", cal_loss_test(nn, X, Y));
+
+    // Print some to the screen
+    for (int i = 0; i < 3; i++) {
+        printf("\nLabel: ");
+        for (int j = 0; j < 10; j++) {
+            if (Y[i][j] == 1) printf("%d\n", j);
+        }
+        for (int j = 0; j < 784; j++) {
+            printf("%3d", X[i][j]);
+            if (j % 28 == 27) printf("\n");  // mỗi dòng 28 pixel
+        }
+        forwardPropagation(nn, X[i]);
+        printOutput(nn);
+    }
+    // Free
+    for (int i = 0; i < NUMOFTEST; i++) {
+        free(X[i]);
+        free(Y[i]);
+    }
+    free(X);
+    free(Y);
+}
+
+
+void loadTrainedModel(NeuralNetwork *nn, const char *filePath){
+    FILE *fp = fopen(filePath, "r");
+    if (fp == NULL) {
+        perror("Không thể mở file");
+        exit(EXIT_FAILURE);
+    }
+    // Load W
+    for(int layerIndex = 0; layerIndex < nn->numOfLayers - 1; layerIndex++){
+        for(int i=0; i < nn->layerDescription[layerIndex]; i++){
+            for(int j = 0; j < nn->layerDescription[layerIndex + 1]; j++){
+                fscanf(fp, "%lf", &nn->W[layerIndex][i][j]);
+            }
+        }
+        //Bo qua 2 dong giua cac layer
+        fgetc(fp); // đọc newline
+        fgetc(fp); // đọc thêm newline nữa
+    }
+
+    // Load B
+    for(int layerIndex = 0; layerIndex < nn->numOfLayers - 1; layerIndex++){
+        for(int j = 0; j<nn->layerDescription[layerIndex + 1]; j++){
+            fscanf(fp, "%lf", &nn->B[layerIndex][j]);
+        }
+    }
+    fclose(fp);
+}
+
 void train(NeuralNetwork *nn, int **data, int epochs, double lr) {
     // Chuẩn bị dữ liệu đầu vào X và nhãn Y
     // thêm nếu cần
@@ -62,6 +148,20 @@ double cal_loss(NeuralNetwork *nn, int **X, int **Y) {
     return loss / NUMOFEXAMPLES;
 }
 
+double cal_loss_test(NeuralNetwork *nn, int **X, int **Y) {
+    double loss = 0.0;
+    int outputSize = nn->layerDescription[nn->numOfLayers - 1];
+
+    for (int j = 0; j < NUMOFTEST; j++) {
+        forwardPropagation(nn, X[j]);  // Gọi trực tiếp hàm forward
+        for (int i = 0; i < outputSize; i++) {
+            double diff = (double)Y[j][i] - nn->A[nn->numOfLayers - 2][i];
+            loss += (diff * diff) / 2.0;
+        }
+    }
+
+    return loss / NUMOFTEST;
+}
 
 void backPropagation(NeuralNetwork *nn, int *X, int *Y, double lr){
     for(int layerIndex = nn->numOfLayers -2; layerIndex >= 0; layerIndex--){
@@ -115,13 +215,13 @@ void forwardPropagation(NeuralNetwork *nn, int *X){
 }
 
 void printParametter(NeuralNetwork *nn){
-    FILE *pOutput = fopen("C:\\Users\\84333\\projects\\neural_network_in_c\\OUTPUT", "w");
+    FILE *pOutput = fopen("OUTPUT", "w");
     //Print W
-    fprintf(pOutput, "W\n");
+    // fprintf(pOutput, "W\n");
     for(int layerIndex = 0; layerIndex < nn->numOfLayers - 1; layerIndex++){
         for(int i = 0; i<nn->layerDescription[layerIndex]; i++){
             for(int j = 0; j<nn->layerDescription[layerIndex + 1]; j++){
-                fprintf(pOutput, "%lf\n", nn->W[layerIndex][i][j]);
+                fprintf(pOutput, "%lf ", nn->W[layerIndex][i][j]);
             }
             fprintf(pOutput, "\n");
         }
@@ -129,10 +229,10 @@ void printParametter(NeuralNetwork *nn){
         fprintf(pOutput,"\n");
     }
     // Print B
-    fprintf(pOutput, "W\n");
+    // fprintf(pOutput, "B\n");
     for(int layerIndex = 0; layerIndex < nn->numOfLayers - 1; layerIndex++){
         for(int j = 0; j < nn->layerDescription[layerIndex + 1]; j++){
-            fprintf(pOutput, "%lf ");
+            fprintf(pOutput, "%lf ", nn->B[layerIndex][j]);
         }
         fprintf(pOutput, "\n");
     }
