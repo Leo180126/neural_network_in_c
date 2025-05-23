@@ -5,7 +5,7 @@ int main(){
     NeuralNetwork *p_nn = &nn;
     int layerDescription[4] = {784, 100, 80, 10};
     initNetwork(p_nn, 4, layerDescription);
-    loadTrainedModel(p_nn, "OUTPUT");
+    loadTrainedModel(p_nn, "PARAMETTER");
     // for(int layerIndex = 0; layerIndex < p_nn->numOfLayers - 1; layerIndex++){
     //     for(int i = 0; i<p_nn->layerDescription[layerIndex]; i++){
     //         for(int j = 0; j<p_nn->layerDescription[layerIndex + 1]; j++){
@@ -36,9 +36,10 @@ int main(){
     // }
     // forwardPropagation(p_nn, X);
     // printOutput(p_nn);
+
     runTest(p_nn, data);
     // Random guesser
-    guesser(p_nn, 40602, data);
+    guesser(p_nn, 40642, data);
 
     // Giai phong bo nho
     for (int i = 0; i < numRows; i++) {

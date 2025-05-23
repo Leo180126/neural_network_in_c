@@ -1,5 +1,24 @@
 #include "NeuralNetwork.h"
 
+void cal_accuracy(NeuralNetwork *nn, int **X, int **data){
+    int numOfCorrect = 0;
+    for(int i = 0; i < NUMOFTEST; i++){
+        forwardPropagation(nn, X[i]);
+        // Find the largest output
+        double largest = 0;
+        int largestIndex = 0;
+        for(int i=0; i<nn->layerDescription[nn->numOfLayers - 1]; i++){
+            if(largest < nn->A[nn->numOfLayers - 2][i]){
+                largest = nn->A[nn->numOfLayers - 2][i];
+                largestIndex = i;
+            }
+        }
+        if(largestIndex == data[FIRSTTEST_EX + i][0])
+            numOfCorrect ++;
+    }
+    printf("\nAccuracy = %.2lf %%\n", ((double)numOfCorrect/NUMOFTEST)*100.0);
+}
+
 void guesser(NeuralNetwork *nn, int example_index, int **data){
     printf("\nRandom Guesser !!!!!!!!!!\n");
     int X[784];
@@ -35,6 +54,7 @@ void runTest(NeuralNetwork *nn, int **data){
     }
 
     printf("\nMSE loss = %lf\n", cal_loss_test(nn, X, Y));
+    cal_accuracy(nn, X, data);
 
     // Print some to the screen
     for (int i = 0; i < 3; i++) {
@@ -215,7 +235,7 @@ void forwardPropagation(NeuralNetwork *nn, int *X){
 }
 
 void printParametter(NeuralNetwork *nn){
-    FILE *pOutput = fopen("OUTPUT", "w");
+    FILE *pOutput = fopen("PARAMETTER", "w");
     //Print W
     // fprintf(pOutput, "W\n");
     for(int layerIndex = 0; layerIndex < nn->numOfLayers - 1; layerIndex++){
