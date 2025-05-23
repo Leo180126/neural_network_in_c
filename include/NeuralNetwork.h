@@ -7,9 +7,9 @@
 
 // Chia 50000/10000 train/test data
 
-#define NUMOFEXAMPLES 1000
+#define NUMOFEXAMPLES 50000
 #define FIRSTTEST_EX 50000
-#define NUMOFTEST 1000
+#define NUMOFTEST 9000
 
 typedef struct {
     int numOfLayers;
