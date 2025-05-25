@@ -108,7 +108,6 @@ void loadTrainedModel(NeuralNetwork *nn, const char *filePath){
 
 void train(NeuralNetwork *nn, int **data, int epochs, double lr) {
     // Chuẩn bị dữ liệu đầu vào X và nhãn Y
-    // thêm nếu cần
     int **X = (int **)malloc(NUMOFEXAMPLES * sizeof(int *));
     int **Y = (int **)malloc(NUMOFEXAMPLES * sizeof(int *));
     for (int i = 0; i < NUMOFEXAMPLES; i++) {
