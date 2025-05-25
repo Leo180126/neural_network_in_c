@@ -7,3 +7,4 @@
 - include/MNIST.csv // dowload from link
 - train // code for train the DNN
 - testModel // code to test model woth the test data
+- See the OUPUT in trainOutput and testOutput and trained parametter with 94% acurracy in PARAMETTER
